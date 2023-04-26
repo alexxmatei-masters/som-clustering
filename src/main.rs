@@ -32,9 +32,6 @@ fn draw_lines(
     network: &SOMNetwork,
     root: &mut DrawingArea<BitMapBackend, plotters::coord::Shift>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    // Define the dimensions and layout of the plot
-    root.fill(&WHITE)?;
-
     let x_min = -300.0;
     let x_max = 300.0;
     let y_min = -300.0;
@@ -88,9 +85,10 @@ fn draw_points(
     points: &Vec<(f64, f64)>,
     root: &mut DrawingArea<BitMapBackend, plotters::coord::Shift>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    // Define the dimensions and layout of the plot
+    // Initialize plot to be empty
     root.fill(&WHITE)?;
 
+    // Define the dimensions and layout of the plot
     let x_min = -300.0;
     let x_max = 300.0;
     let y_min = -300.0;
@@ -166,9 +164,7 @@ fn main() {
     }
 
     let path1 = "./plot1.png";
-    let path2 = "./plot2.png";
     let mut plot1 = BitMapBackend::new(&path1, (600, 600)).into_drawing_area();
-    let mut plot2 = BitMapBackend::new(&path2, (600, 600)).into_drawing_area();
     draw_points(&points, &mut plot1);
-    draw_lines(&som_network, &mut plot2);
+    draw_lines(&som_network, &mut plot1);
 }
