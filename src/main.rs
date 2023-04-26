@@ -5,7 +5,13 @@ use std::{
 
 use plotters::prelude::*;
 use plotters::style::Color;
+struct SOMNeuron {
+    weights: Vec<f64>,
+}
 
+struct SOMNetwork {
+    neurons: Vec<Vec<SOMNeuron>>,
+}
 fn read_points_from_file() -> Vec<(f64, f64)> {
     let file = File::open("points.txt").expect("Failed to open file");
     let reader = BufReader::new(file);
@@ -19,6 +25,62 @@ fn read_points_from_file() -> Vec<(f64, f64)> {
         points.push((x, y));
     }
     return points;
+}
+
+fn draw_lines(
+    network: &SOMNetwork,
+    root: &mut DrawingArea<BitMapBackend, plotters::coord::Shift>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    // Define the dimensions and layout of the plot
+    root.fill(&WHITE)?;
+
+    let x_min = -300.0;
+    let x_max = 300.0;
+    let y_min = -300.0;
+    let y_max = 300.0;
+
+    let mut chart = ChartBuilder::on(&root)
+        .x_label_area_size(40)
+        .y_label_area_size(40)
+        .margin(5)
+        .caption("SOM Network", ("sans-serif", 50.0))
+        .build_cartesian_2d(x_min..x_max, y_min..y_max)?;
+
+    chart.configure_mesh().axis_style(&BLACK).draw()?;
+
+    for (i, row) in network.neurons.iter().enumerate() {
+        for (j, neuron) in row.iter().enumerate() {
+            if i > 0 {
+                // Draw a line between this neuron and the neuron above it
+                let color = plotters::style::colors::full_palette::BLUE;
+                chart.draw_series(std::iter::once(PathElement::new(
+                    vec![
+                        (neuron.weights[0], neuron.weights[1]),
+                        (
+                            network.neurons[i - 1][j].weights[0],
+                            network.neurons[i - 1][j].weights[1],
+                        ),
+                    ],
+                    &plotters::style::colors::RED,
+                )))?;
+            }
+            if j > 0 {
+                // Draw a line between this neuron and the neuron to its left
+                let color = plotters::style::colors::full_palette::GREEN;
+                chart.draw_series(std::iter::once(PathElement::new(
+                    vec![
+                        (neuron.weights[0], neuron.weights[1]),
+                        (
+                            network.neurons[i][j - 1].weights[0],
+                            network.neurons[i][j - 1].weights[1],
+                        ),
+                    ],
+                    color.filled(),
+                )))?;
+            }
+        }
+    }
+    Ok(())
 }
 
 fn draw_points(
@@ -37,7 +99,7 @@ fn draw_points(
         .x_label_area_size(40)
         .y_label_area_size(40)
         .margin(5)
-        .caption("K Medoids Algorithm", ("sans-serif", 50.0))
+        .caption("SOM Network", ("sans-serif", 50.0))
         .build_cartesian_2d(x_min..x_max, y_min..y_max)?;
 
     chart.configure_mesh().axis_style(&BLACK).draw()?;
@@ -57,14 +119,6 @@ fn draw_points(
 fn main() {
     let points = read_points_from_file();
     println!("{:?}", points);
-
-    struct SOMNeuron {
-        weights: Vec<f64>,
-    }
-
-    struct SOMNetwork {
-        neurons: Vec<Vec<SOMNeuron>>,
-    }
 
     impl SOMNetwork {
         fn new(num_rows: usize, num_cols: usize, input_dim: usize) -> Self {
@@ -108,8 +162,10 @@ fn main() {
         }
     }
 
-    let path1 = "./plot.png";
-    let mut root = BitMapBackend::new(&path1, (600, 600)).into_drawing_area();
-    draw_points(&points, &mut root);
-    print!("plot")
+    let path1 = "./plot1.png";
+    let path2 = "./plot2.png";
+    let mut plot1 = BitMapBackend::new(&path1, (600, 600)).into_drawing_area();
+    let mut plot2 = BitMapBackend::new(&path2, (600, 600)).into_drawing_area();
+    draw_points(&points, &mut plot1);
+    draw_lines(&som_network, &mut plot2);
 }
