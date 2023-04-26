@@ -5,6 +5,7 @@ use std::{
 
 use plotters::prelude::*;
 use plotters::style::Color;
+use rand::Rng;
 struct SOMNeuron {
     weights: Vec<f64>,
 }
@@ -129,7 +130,9 @@ fn main() {
                     let mut weights = Vec::with_capacity(input_dim);
                     for _ in 0..input_dim {
                         // Initialize weight vector with random values between 0 and 1
-                        weights.push(rand::random::<f64>());
+                        let mut rng = rand::thread_rng();
+                        let random_number = rng.gen_range(-300.0..=300.0);
+                        weights.push(random_number);
                     }
                     row.push(SOMNeuron { weights });
                 }
@@ -154,7 +157,7 @@ fn main() {
         }
     }
 
-    let som_network = SOMNetwork::new(5, 5, 2);
+    let som_network = SOMNetwork::new(10, 10, 2);
     for (index, row) in som_network.neurons.iter().enumerate() {
         println!("\nRow #{}:", index);
         for neuron in row {
