@@ -5,6 +5,7 @@ use std::{
 
 use plotters::prelude::*;
 use plotters::style::Color;
+use rand::prelude::*;
 struct SOMNeuron {
     weights: Vec<f64>,
 }
@@ -144,6 +145,43 @@ fn draw_points(
     Ok(())
 }
 
+fn euclidean_distance(p1: &(f64, f64), p2: &(f64, f64)) -> f64 {
+    let dx = p1.0 - p2.0;
+    let dy = p1.1 - p2.1;
+    (dx * dx + dy * dy).sqrt()
+}
+
+fn find_closest_neuron(point: &(f64, f64), network: &SOMNetwork) -> (usize, usize) {
+    let mut closest_neuron_pos = (0, 0);
+    let mut closest_distance = euclidean_distance(
+        &(point.0, point.1),
+        &(
+            network.neurons[0][0].weights[0],
+            network.neurons[0][0].weights[1],
+        ),
+    );
+    for (row_index, row) in network.neurons.iter().enumerate() {
+        for (col_index, neuron) in row.iter().enumerate() {
+            let dist =
+                euclidean_distance(&(point.0, point.1), &(neuron.weights[0], neuron.weights[1]));
+            if dist < closest_distance {
+                closest_neuron_pos = (row_index, col_index);
+                closest_distance = dist;
+            }
+        }
+    }
+    println!(
+        "The winner neuron, the closest to the point is: {:?}",
+        network.neurons[closest_neuron_pos.0][closest_neuron_pos.1]
+    );
+    println!(
+        "The position of that neuron is: {:?}",
+        (closest_neuron_pos.0, closest_neuron_pos.1)
+    );
+
+    closest_neuron_pos
+}
+
 fn main() {
     let points = read_points_from_file();
     println!("{:?}", points);
@@ -188,7 +226,7 @@ fn main() {
         }
     }
 
-    let som_network = SOMNetwork::new(10, 10, 2);
+    let mut som_network = SOMNetwork::new(10, 10, 2);
     for (index, row) in som_network.neurons.iter().enumerate() {
         println!("\nRow #{}:", index);
         for neuron in row {
@@ -201,4 +239,53 @@ fn main() {
     draw_points(&points, &mut plot1);
     draw_neurons(&som_network, &mut plot1);
     draw_lines(&som_network, &mut plot1);
+
+    let mut rng = rand::thread_rng();
+    let rand_point = rng.gen_range(0..10000);
+
+    let mut neighbourhood = 6.1;
+    let mut learning_rate = 0.4;
+
+    println!();
+    println!(
+        "Random point chosen, point #{}: {:?}",
+        rand_point, points[rand_point]
+    );
+    let winner_neuron_pos = find_closest_neuron(&points[rand_point], &som_network);
+
+    // Update weights for winner & neighbourhood
+    println!("Neurons belonging to the neighbourhood:");
+    for (i, row) in som_network.neurons.iter_mut().enumerate() {
+        for (j, neuron) in row.iter_mut().enumerate() {
+            // if neuron belongs to the neighbourhood
+            if (i as i8 >= winner_neuron_pos.0 as i8 - neighbourhood as i8)
+                && (i as i8 <= winner_neuron_pos.0 as i8 + neighbourhood as i8)
+            {
+                if (j as i8 >= winner_neuron_pos.1 as i8 - neighbourhood as i8)
+                    && (j as i8 <= winner_neuron_pos.1 as i8 + neighbourhood as i8)
+                {
+                    println!(
+                        "Updating weights of neuron with the positions {}, {}...",
+                        i, j
+                    );
+                    neuron.weights[0] = neuron.weights[0] as f64
+                        + learning_rate as f64 * (points[rand_point].0 - neuron.weights[0]);
+                    neuron.weights[1] = neuron.weights[1] as f64
+                        + learning_rate as f64 * (points[rand_point].1 - neuron.weights[1]);
+                }
+            }
+        }
+    }
+    let path2 = "./plot2.png";
+    let mut plot2 = BitMapBackend::new(&path2, (600, 600)).into_drawing_area();
+    draw_points(&points, &mut plot2);
+    draw_neurons(&som_network, &mut plot2);
+    draw_lines(&som_network, &mut plot2);
+
+    for (index, row) in som_network.neurons.iter().enumerate() {
+        println!("\nRow #{}:", index);
+        for neuron in row {
+            println!("{:?}", neuron)
+        }
+    }
 }
