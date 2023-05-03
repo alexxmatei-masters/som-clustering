@@ -304,8 +304,20 @@ fn main() {
     draw_lines(&som_network, &mut plot1);
     draw_neurons(&som_network, &mut plot1);
 
-    let mut neighbourhood = 6.1;
-    let mut learning_rate = 0.4;
+    const PROPOSED_ITERATION_NR: u8 = 10;
+    let mut neighbourhood = 6.1
+        * f64::powf(
+            std::f64::consts::E,
+            -epoch as f64 / PROPOSED_ITERATION_NR as f64,
+        );
+    let mut learning_rate = 0.4
+        * f64::powf(
+            std::f64::consts::E,
+            -epoch as f64 / PROPOSED_ITERATION_NR as f64,
+        );
+    println!("Epoch {}", epoch);
+    println!("Learning rate: {}", learning_rate);
+    println!("Neighbourhood value: {}", neighbourhood);
 
     for (index, point) in points.iter().enumerate() {
         let path2 = format!("{}/e{}_plot2_i{}.png", folder_name, epoch, index + 1);
