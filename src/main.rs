@@ -145,6 +145,64 @@ fn draw_points(
     Ok(())
 }
 
+fn draw_randomly_selected_point(
+    point: &(f64, f64),
+    root: &mut DrawingArea<BitMapBackend, plotters::coord::Shift>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    // Define the dimensions and layout of the plot
+    let x_min = -300.0;
+    let x_max = 300.0;
+    let y_min = -300.0;
+    let y_max = 300.0;
+
+    let mut chart = ChartBuilder::on(&root)
+        .x_label_area_size(40)
+        .y_label_area_size(40)
+        .margin(5)
+        .caption("SOM Network", ("sans-serif", 50.0))
+        .build_cartesian_2d(x_min..x_max, y_min..y_max)?;
+
+    chart.configure_mesh().axis_style(&BLACK).draw()?;
+
+    // Add the points to the chart
+    let color = plotters::style::colors::full_palette::PURPLE;
+    chart.draw_series(std::iter::once(Circle::new(
+        (point.0, point.1),
+        5,
+        color.filled(),
+    )))?;
+    Ok(())
+}
+
+fn draw_winner_neuron(
+    point: &(f64, f64),
+    root: &mut DrawingArea<BitMapBackend, plotters::coord::Shift>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    // Define the dimensions and layout of the plot
+    let x_min = -300.0;
+    let x_max = 300.0;
+    let y_min = -300.0;
+    let y_max = 300.0;
+
+    let mut chart = ChartBuilder::on(&root)
+        .x_label_area_size(40)
+        .y_label_area_size(40)
+        .margin(5)
+        .caption("SOM Network", ("sans-serif", 50.0))
+        .build_cartesian_2d(x_min..x_max, y_min..y_max)?;
+
+    chart.configure_mesh().axis_style(&BLACK).draw()?;
+
+    // Add the points to the chart
+    let color = plotters::style::colors::full_palette::RED;
+    chart.draw_series(std::iter::once(Circle::new(
+        (point.0, point.1),
+        5,
+        color.filled(),
+    )))?;
+    Ok(())
+}
+
 fn euclidean_distance(p1: &(f64, f64), p2: &(f64, f64)) -> f64 {
     let dx = p1.0 - p2.0;
     let dy = p1.1 - p2.1;
@@ -251,7 +309,15 @@ fn main() {
         "Random point chosen, point #{}: {:?}",
         rand_point, points[rand_point]
     );
+    draw_randomly_selected_point(&points[rand_point], &mut plot1);
     let winner_neuron_pos = find_closest_neuron(&points[rand_point], &som_network);
+    draw_winner_neuron(
+        &(
+            som_network.neurons[winner_neuron_pos.0][winner_neuron_pos.1].weights[0] as f64,
+            som_network.neurons[winner_neuron_pos.0][winner_neuron_pos.1].weights[1] as f64,
+        ),
+        &mut plot1,
+    );
 
     // Update weights for winner & neighbourhood
     println!("Neurons belonging to the neighbourhood:");
