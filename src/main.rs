@@ -50,7 +50,6 @@ fn draw_lines(
         for (j, neuron) in row.iter().enumerate() {
             if i > 0 {
                 // Draw a line between this neuron and the neuron above it
-                let color = plotters::style::colors::full_palette::BLUE;
                 chart.draw_series(std::iter::once(PathElement::new(
                     vec![
                         (neuron.weights[0], neuron.weights[1]),
@@ -59,12 +58,12 @@ fn draw_lines(
                             network.neurons[i - 1][j].weights[1],
                         ),
                     ],
-                    &plotters::style::colors::RED,
+                    plotters::style::colors::BLACK.filled().stroke_width(2),
                 )))?;
             }
             if j > 0 {
                 // Draw a line between this neuron and the neuron to its left
-                let color = plotters::style::colors::full_palette::GREEN;
+                let color = plotters::style::colors::full_palette::BLACK;
                 chart.draw_series(std::iter::once(PathElement::new(
                     vec![
                         (neuron.weights[0], neuron.weights[1]),
@@ -73,7 +72,7 @@ fn draw_lines(
                             network.neurons[i][j - 1].weights[1],
                         ),
                     ],
-                    color.filled(),
+                    color.filled().stroke_width(2),
                 )))?;
             }
         }
@@ -122,15 +121,23 @@ fn main() {
     impl SOMNetwork {
         fn new(num_rows: usize, num_cols: usize, input_dim: usize) -> Self {
             let mut neurons = Vec::with_capacity(num_rows);
-            for _ in 0..num_rows {
+            for row_nr in 0..num_rows {
                 let mut row = Vec::with_capacity(num_cols);
-                for _ in 0..num_cols {
+                for col_nr in 0..num_cols {
                     let mut weights = Vec::with_capacity(input_dim);
-                    for _ in 0..input_dim {
+                    for pos in 0..input_dim {
+                        // medoids[i, j] = new Medoid(-300 + 30 + (i * 60), -300 + 30 + (j * 60));
                         // Initialize weight vector with random values between 0 and 1
                         let mut rng = rand::thread_rng();
                         let random_number = rng.gen_range(-300.0..=300.0);
-                        weights.push(random_number);
+                        let mut neuron_position: f64 = 0.0;
+                        if pos == 0 {
+                            neuron_position = -300.0 + 30.0 + (row_nr as f64 * 60.0);
+                        }
+                        if pos == 1 {
+                            neuron_position = -300.0 + 30.0 + (col_nr as f64 * 60.0);
+                        }
+                        weights.push(neuron_position);
                     }
                     row.push(SOMNeuron { weights });
                 }
