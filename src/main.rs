@@ -5,7 +5,6 @@ use std::{
 
 use plotters::prelude::*;
 use plotters::style::Color;
-use rand::Rng;
 struct SOMNeuron {
     weights: Vec<f64>,
 }
@@ -126,10 +125,6 @@ fn main() {
                 for col_nr in 0..num_cols {
                     let mut weights = Vec::with_capacity(input_dim);
                     for pos in 0..input_dim {
-                        // medoids[i, j] = new Medoid(-300 + 30 + (i * 60), -300 + 30 + (j * 60));
-                        // Initialize weight vector with random values between 0 and 1
-                        let mut rng = rand::thread_rng();
-                        let random_number = rng.gen_range(-300.0..=300.0);
                         let mut neuron_position: f64 = 0.0;
                         if pos == 0 {
                             neuron_position = -300.0 + 30.0 + (row_nr as f64 * 60.0);
