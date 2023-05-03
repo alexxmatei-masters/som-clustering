@@ -304,73 +304,81 @@ fn main() {
     draw_lines(&som_network, &mut plot1);
     draw_neurons(&som_network, &mut plot1);
 
-    const PROPOSED_ITERATION_NR: u8 = 10;
-    let mut neighbourhood = 6.1
-        * f64::powf(
-            std::f64::consts::E,
-            -epoch as f64 / PROPOSED_ITERATION_NR as f64,
-        );
-    let mut learning_rate = 0.4
-        * f64::powf(
-            std::f64::consts::E,
-            -epoch as f64 / PROPOSED_ITERATION_NR as f64,
-        );
-    println!("Epoch {}", epoch);
-    println!("Learning rate: {}", learning_rate);
-    println!("Neighbourhood value: {}", neighbourhood);
+    loop {
+        const PROPOSED_ITERATION_NR: u8 = 10;
+        let mut neighbourhood = 6.1
+            * f64::powf(
+                std::f64::consts::E,
+                -epoch as f64 / PROPOSED_ITERATION_NR as f64,
+            );
+        let mut learning_rate = 0.4
+            * f64::powf(
+                std::f64::consts::E,
+                -epoch as f64 / PROPOSED_ITERATION_NR as f64,
+            );
+        if learning_rate <= 0.001 {
+            break;
+        }
+        println!("Epoch {}", epoch);
+        println!("Learning rate: {}", learning_rate);
+        println!("Neighbourhood value: {}", neighbourhood);
 
-    for (index, point) in points.iter().enumerate() {
-        let path2 = format!("{}/e{}_plot2_i{}.png", folder_name, epoch, index + 1);
-        // println!();
-        // println!("Point chosen, point: {:?}", point);
+        for (index, point) in points.iter().enumerate() {
+            let path2 = format!("{}/e{}_plot2_i{}.png", folder_name, epoch, index + 1);
+            // println!();
+            // println!("Point chosen, point: {:?}", point);
 
-        let winner_neuron_pos = find_closest_neuron(&point, &som_network);
+            let winner_neuron_pos = find_closest_neuron(&point, &som_network);
 
-        // Update weights for winner & neighbourhood
-        // println!("Neurons belonging to the neighbourhood:");
-        for (i, row) in som_network.neurons.iter_mut().enumerate() {
-            for (j, neuron) in row.iter_mut().enumerate() {
-                // if neuron belongs to the neighbourhood
-                if (i as i8 >= winner_neuron_pos.0 as i8 - neighbourhood as i8)
-                    && (i as i8 <= winner_neuron_pos.0 as i8 + neighbourhood as i8)
-                {
-                    if (j as i8 >= winner_neuron_pos.1 as i8 - neighbourhood as i8)
-                        && (j as i8 <= winner_neuron_pos.1 as i8 + neighbourhood as i8)
+            // Update weights for winner & neighbourhood
+            // println!("Neurons belonging to the neighbourhood:");
+            for (i, row) in som_network.neurons.iter_mut().enumerate() {
+                for (j, neuron) in row.iter_mut().enumerate() {
+                    // if neuron belongs to the neighbourhood
+                    if (i as i8 >= winner_neuron_pos.0 as i8 - neighbourhood as i8)
+                        && (i as i8 <= winner_neuron_pos.0 as i8 + neighbourhood as i8)
                     {
-                        // println!(
-                        // "Updating weights of neuron with the positions {}, {}...",
-                        // i,
-                        // j
-                        // );
-                        neuron.weights[0] = neuron.weights[0] as f64
-                            + learning_rate as f64 * (point.0 - neuron.weights[0]);
-                        neuron.weights[1] = neuron.weights[1] as f64
-                            + learning_rate as f64 * (point.1 - neuron.weights[1]);
+                        if (j as i8 >= winner_neuron_pos.1 as i8 - neighbourhood as i8)
+                            && (j as i8 <= winner_neuron_pos.1 as i8 + neighbourhood as i8)
+                        {
+                            // println!(
+                            // "Updating weights of neuron with the positions {}, {}...",
+                            // i,
+                            // j
+                            // );
+                            neuron.weights[0] = neuron.weights[0] as f64
+                                + learning_rate as f64 * (point.0 - neuron.weights[0]);
+                            neuron.weights[1] = neuron.weights[1] as f64
+                                + learning_rate as f64 * (point.1 - neuron.weights[1]);
+                        }
                     }
                 }
             }
-        }
 
-        if (index == 9999 || index == 0) {
-            let mut plot2 = BitMapBackend::new(&path2, (600, 600)).into_drawing_area();
-            draw_points(&points, &mut plot2);
-            draw_lines(&som_network, &mut plot2);
-            draw_neurons(&som_network, &mut plot2);
-            draw_randomly_selected_point(&point, &mut plot2);
-            draw_winner_neuron(
-                &(
-                    som_network.neurons[winner_neuron_pos.0][winner_neuron_pos.1].weights[0] as f64,
-                    som_network.neurons[winner_neuron_pos.0][winner_neuron_pos.1].weights[1] as f64,
-                ),
-                &mut plot2,
-            );
-        }
+            if (index == 9999 || index == 0) {
+                let mut plot2 = BitMapBackend::new(&path2, (600, 600)).into_drawing_area();
+                draw_points(&points, &mut plot2);
+                draw_lines(&som_network, &mut plot2);
+                draw_neurons(&som_network, &mut plot2);
+                draw_randomly_selected_point(&point, &mut plot2);
+                draw_winner_neuron(
+                    &(
+                        som_network.neurons[winner_neuron_pos.0][winner_neuron_pos.1].weights[0]
+                            as f64,
+                        som_network.neurons[winner_neuron_pos.0][winner_neuron_pos.1].weights[1]
+                            as f64,
+                    ),
+                    &mut plot2,
+                );
+            }
 
-        for (index, row) in som_network.neurons.iter().enumerate() {
-            // println!("\nRow #{}:", index);
-            for neuron in row {
-                // println!("{:?}", neuron)
+            for (index, row) in som_network.neurons.iter().enumerate() {
+                // println!("\nRow #{}:", index);
+                for neuron in row {
+                    // println!("{:?}", neuron)
+                }
             }
         }
+        epoch += 1;
     }
 }
