@@ -7,5 +7,4 @@ edition = "2021"
 
 [dependencies]
 plotters = "0.3.4"
-rand = "0.8.5"
 chrono = "0.4.24"

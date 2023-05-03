@@ -6,7 +6,6 @@ use std::{
 
 use plotters::prelude::*;
 use plotters::style::Color;
-use rand::prelude::*;
 struct SOMNeuron {
     weights: Vec<f64>,
 }
@@ -248,7 +247,6 @@ fn main() {
     let folder_name = format!("plots_{}", timestamp);
     fs::create_dir(&folder_name).unwrap();
     let path1 = format!("{}/e{}_plot1.png", folder_name, epoch);
-    let path2 = format!("{}/e{}_plot2.png", folder_name, epoch);
 
     let points = read_points_from_file();
     println!("{:?}", points);
@@ -306,60 +304,60 @@ fn main() {
     draw_lines(&som_network, &mut plot1);
     draw_neurons(&som_network, &mut plot1);
 
-    let mut rng = rand::thread_rng();
-    let rand_point = rng.gen_range(0..10000);
-
     let mut neighbourhood = 6.1;
     let mut learning_rate = 0.4;
 
-    println!();
-    println!(
-        "Random point chosen, point #{}: {:?}",
-        rand_point, points[rand_point]
-    );
+    for (index, point) in points.iter().enumerate() {
+        let path2 = format!("{}/e{}_plot2_i{}.png", folder_name, epoch, index + 1);
+        println!();
+        println!("Point chosen, point: {:?}", point);
 
-    let winner_neuron_pos = find_closest_neuron(&points[rand_point], &som_network);
+        let winner_neuron_pos = find_closest_neuron(&point, &som_network);
 
-    // Update weights for winner & neighbourhood
-    println!("Neurons belonging to the neighbourhood:");
-    for (i, row) in som_network.neurons.iter_mut().enumerate() {
-        for (j, neuron) in row.iter_mut().enumerate() {
-            // if neuron belongs to the neighbourhood
-            if (i as i8 >= winner_neuron_pos.0 as i8 - neighbourhood as i8)
-                && (i as i8 <= winner_neuron_pos.0 as i8 + neighbourhood as i8)
-            {
-                if (j as i8 >= winner_neuron_pos.1 as i8 - neighbourhood as i8)
-                    && (j as i8 <= winner_neuron_pos.1 as i8 + neighbourhood as i8)
+        // Update weights for winner & neighbourhood
+        println!("Neurons belonging to the neighbourhood:");
+        for (i, row) in som_network.neurons.iter_mut().enumerate() {
+            for (j, neuron) in row.iter_mut().enumerate() {
+                // if neuron belongs to the neighbourhood
+                if (i as i8 >= winner_neuron_pos.0 as i8 - neighbourhood as i8)
+                    && (i as i8 <= winner_neuron_pos.0 as i8 + neighbourhood as i8)
                 {
-                    println!(
-                        "Updating weights of neuron with the positions {}, {}...",
-                        i, j
-                    );
-                    neuron.weights[0] = neuron.weights[0] as f64
-                        + learning_rate as f64 * (points[rand_point].0 - neuron.weights[0]);
-                    neuron.weights[1] = neuron.weights[1] as f64
-                        + learning_rate as f64 * (points[rand_point].1 - neuron.weights[1]);
+                    if (j as i8 >= winner_neuron_pos.1 as i8 - neighbourhood as i8)
+                        && (j as i8 <= winner_neuron_pos.1 as i8 + neighbourhood as i8)
+                    {
+                        println!(
+                            "Updating weights of neuron with the positions {}, {}...",
+                            i, j
+                        );
+                        neuron.weights[0] = neuron.weights[0] as f64
+                            + learning_rate as f64 * (point.0 - neuron.weights[0]);
+                        neuron.weights[1] = neuron.weights[1] as f64
+                            + learning_rate as f64 * (point.1 - neuron.weights[1]);
+                    }
                 }
             }
         }
-    }
-    let mut plot2 = BitMapBackend::new(&path2, (600, 600)).into_drawing_area();
-    draw_points(&points, &mut plot2);
-    draw_lines(&som_network, &mut plot2);
-    draw_neurons(&som_network, &mut plot2);
-    draw_randomly_selected_point(&points[rand_point], &mut plot2);
-    draw_winner_neuron(
-        &(
-            som_network.neurons[winner_neuron_pos.0][winner_neuron_pos.1].weights[0] as f64,
-            som_network.neurons[winner_neuron_pos.0][winner_neuron_pos.1].weights[1] as f64,
-        ),
-        &mut plot2,
-    );
 
-    for (index, row) in som_network.neurons.iter().enumerate() {
-        println!("\nRow #{}:", index);
-        for neuron in row {
-            println!("{:?}", neuron)
+        if (index % 1000 == 0) {
+            let mut plot2 = BitMapBackend::new(&path2, (600, 600)).into_drawing_area();
+            draw_points(&points, &mut plot2);
+            draw_lines(&som_network, &mut plot2);
+            draw_neurons(&som_network, &mut plot2);
+            draw_randomly_selected_point(&point, &mut plot2);
+            draw_winner_neuron(
+                &(
+                    som_network.neurons[winner_neuron_pos.0][winner_neuron_pos.1].weights[0] as f64,
+                    som_network.neurons[winner_neuron_pos.0][winner_neuron_pos.1].weights[1] as f64,
+                ),
+                &mut plot2,
+            );
+        }
+
+        for (index, row) in som_network.neurons.iter().enumerate() {
+            println!("\nRow #{}:", index);
+            for neuron in row {
+                println!("{:?}", neuron)
+            }
         }
     }
 }
