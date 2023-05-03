@@ -13,6 +13,7 @@ struct SOMNeuron {
 struct SOMNetwork {
     neurons: Vec<Vec<SOMNeuron>>,
 }
+
 fn read_points_from_file() -> Vec<(f64, f64)> {
     let file = File::open("points.txt").expect("Failed to open file");
     let reader = BufReader::new(file);
@@ -316,12 +317,19 @@ fn main() {
                 std::f64::consts::E,
                 -epoch as f64 / PROPOSED_ITERATION_NR as f64,
             );
-        if learning_rate <= 0.001 {
+        println!();
+        println!("Epoch {}", epoch);
+        println!("Learning rate: {:.5}", learning_rate);
+        println!("Neighbourhood value: {:.3}", neighbourhood);
+
+        const LEARNING_RATE_THRESHOLD: f32 = 0.001;
+        if learning_rate <= LEARNING_RATE_THRESHOLD as f64 {
+            println!(
+                "Learning rate under {}, exiting program...",
+                LEARNING_RATE_THRESHOLD
+            );
             break;
         }
-        println!("Epoch {}", epoch);
-        println!("Learning rate: {}", learning_rate);
-        println!("Neighbourhood value: {}", neighbourhood);
 
         for (index, point) in points.iter().enumerate() {
             let path2 = format!("{}/e{}_plot2_i{}.png", folder_name, epoch, index + 1);
