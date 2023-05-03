@@ -1,15 +1,13 @@
 use chrono::{DateTime, Local};
+use plotters::{prelude::*, style::Color};
 use std::{
     fs::{self, File},
     io::{BufRead, BufReader},
 };
 
-use plotters::prelude::*;
-use plotters::style::Color;
 struct SOMNeuron {
     weights: Vec<f64>,
 }
-
 struct SOMNetwork {
     neurons: Vec<Vec<SOMNeuron>>,
 }
@@ -99,8 +97,8 @@ fn draw_neurons(
 
     chart.configure_mesh().axis_style(&BLACK).draw()?;
 
-    for (i, row) in network.neurons.iter().enumerate() {
-        for (j, neuron) in row.iter().enumerate() {
+    for row in &network.neurons {
+        for neuron in row {
             let color = plotters::style::colors::full_palette::PINK_300;
             chart.draw_series(std::iter::once(Circle::new(
                 (neuron.weights[0], neuron.weights[1]),
@@ -240,7 +238,6 @@ fn main() {
     let folder_name = format!("plots_{}", timestamp);
     fs::create_dir(&folder_name).unwrap();
     let path1 = format!("{}/e{}_plot1.png", folder_name, epoch);
-
     let points = read_points_from_file();
 
     impl SOMNetwork {
@@ -267,6 +264,7 @@ fn main() {
             SOMNetwork { neurons }
         }
     }
+
     impl std::fmt::Debug for SOMNeuron {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             f.debug_struct("SOMNeuron")
@@ -285,18 +283,18 @@ fn main() {
 
     let mut som_network = SOMNetwork::new(10, 10, 2);
     let mut plot1 = BitMapBackend::new(&path1, (600, 600)).into_drawing_area();
-    draw_points(&points, &mut plot1);
-    draw_lines(&som_network, &mut plot1);
-    draw_neurons(&som_network, &mut plot1);
+    draw_points(&points, &mut plot1).unwrap();
+    draw_lines(&som_network, &mut plot1).unwrap();
+    draw_neurons(&som_network, &mut plot1).unwrap();
 
     loop {
         const PROPOSED_ITERATION_NR: u8 = 10;
-        let mut neighbourhood = 6.1
+        let neighbourhood = 6.1
             * f64::powf(
                 std::f64::consts::E,
                 -epoch as f64 / PROPOSED_ITERATION_NR as f64,
             );
-        let mut learning_rate = 0.4
+        let learning_rate = 0.4
             * f64::powf(
                 std::f64::consts::E,
                 -epoch as f64 / PROPOSED_ITERATION_NR as f64,
@@ -339,12 +337,12 @@ fn main() {
                 }
             }
 
-            if (index == 9999) {
+            if index == 9999 {
                 let mut plot2 = BitMapBackend::new(&path2, (600, 600)).into_drawing_area();
-                draw_points(&points, &mut plot2);
-                draw_lines(&som_network, &mut plot2);
-                draw_neurons(&som_network, &mut plot2);
-                draw_randomly_selected_point(&point, &mut plot2);
+                draw_points(&points, &mut plot2).unwrap();
+                draw_lines(&som_network, &mut plot2).unwrap();
+                draw_neurons(&som_network, &mut plot2).unwrap();
+                draw_randomly_selected_point(&point, &mut plot2).unwrap();
                 draw_winner_neuron(
                     &(
                         som_network.neurons[winner_neuron_pos.0][winner_neuron_pos.1].weights[0]
@@ -353,7 +351,8 @@ fn main() {
                             as f64,
                     ),
                     &mut plot2,
-                );
+                )
+                .unwrap();
             }
         }
         epoch += 1;
