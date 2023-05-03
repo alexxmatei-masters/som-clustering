@@ -1,5 +1,6 @@
+use chrono::{DateTime, Local};
 use std::{
-    fs::File,
+    fs::{self, File},
     io::{BufRead, BufReader},
 };
 
@@ -241,6 +242,14 @@ fn find_closest_neuron(point: &(f64, f64), network: &SOMNetwork) -> (usize, usiz
 }
 
 fn main() {
+    let local: DateTime<Local> = Local::now();
+    let mut epoch = 1;
+    let timestamp = local.format("%Y%m%d-%H%M%S").to_string();
+    let folder_name = format!("plots_{}", timestamp);
+    fs::create_dir(&folder_name).unwrap();
+    let path1 = format!("{}/e{}_plot1.png", folder_name, epoch);
+    let path2 = format!("{}/e{}_plot2.png", folder_name, epoch);
+
     let points = read_points_from_file();
     println!("{:?}", points);
 
@@ -292,7 +301,6 @@ fn main() {
         }
     }
 
-    let path1 = "./plot1.png";
     let mut plot1 = BitMapBackend::new(&path1, (600, 600)).into_drawing_area();
     draw_points(&points, &mut plot1);
     draw_lines(&som_network, &mut plot1);
@@ -342,7 +350,6 @@ fn main() {
             }
         }
     }
-    let path2 = "./plot2.png";
     let mut plot2 = BitMapBackend::new(&path2, (600, 600)).into_drawing_area();
     draw_points(&points, &mut plot2);
     draw_lines(&som_network, &mut plot2);
