@@ -317,15 +317,8 @@ fn main() {
         "Random point chosen, point #{}: {:?}",
         rand_point, points[rand_point]
     );
-    draw_randomly_selected_point(&points[rand_point], &mut plot1);
+
     let winner_neuron_pos = find_closest_neuron(&points[rand_point], &som_network);
-    draw_winner_neuron(
-        &(
-            som_network.neurons[winner_neuron_pos.0][winner_neuron_pos.1].weights[0] as f64,
-            som_network.neurons[winner_neuron_pos.0][winner_neuron_pos.1].weights[1] as f64,
-        ),
-        &mut plot1,
-    );
 
     // Update weights for winner & neighbourhood
     println!("Neurons belonging to the neighbourhood:");
@@ -354,6 +347,14 @@ fn main() {
     draw_points(&points, &mut plot2);
     draw_lines(&som_network, &mut plot2);
     draw_neurons(&som_network, &mut plot2);
+    draw_randomly_selected_point(&points[rand_point], &mut plot2);
+    draw_winner_neuron(
+        &(
+            som_network.neurons[winner_neuron_pos.0][winner_neuron_pos.1].weights[0] as f64,
+            som_network.neurons[winner_neuron_pos.0][winner_neuron_pos.1].weights[1] as f64,
+        ),
+        &mut plot2,
+    );
 
     for (index, row) in som_network.neurons.iter().enumerate() {
         println!("\nRow #{}:", index);
