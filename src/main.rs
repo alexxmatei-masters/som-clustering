@@ -237,8 +237,8 @@ fn main() {
     let path1 = "./plot1.png";
     let mut plot1 = BitMapBackend::new(&path1, (600, 600)).into_drawing_area();
     draw_points(&points, &mut plot1);
-    draw_neurons(&som_network, &mut plot1);
     draw_lines(&som_network, &mut plot1);
+    draw_neurons(&som_network, &mut plot1);
 
     let mut rng = rand::thread_rng();
     let rand_point = rng.gen_range(0..10000);
@@ -279,8 +279,8 @@ fn main() {
     let path2 = "./plot2.png";
     let mut plot2 = BitMapBackend::new(&path2, (600, 600)).into_drawing_area();
     draw_points(&points, &mut plot2);
-    draw_neurons(&som_network, &mut plot2);
     draw_lines(&som_network, &mut plot2);
+    draw_neurons(&som_network, &mut plot2);
 
     for (index, row) in som_network.neurons.iter().enumerate() {
         println!("\nRow #{}:", index);
