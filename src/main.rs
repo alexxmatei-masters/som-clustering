@@ -355,7 +355,7 @@ fn main() {
                 }
             }
 
-            if (index == 9999 || index == 0) {
+            if (index == 9999) {
                 let mut plot2 = BitMapBackend::new(&path2, (600, 600)).into_drawing_area();
                 draw_points(&points, &mut plot2);
                 draw_lines(&som_network, &mut plot2);
