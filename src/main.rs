@@ -242,7 +242,7 @@ fn find_closest_neuron(point: &(f64, f64), network: &SOMNetwork) -> (usize, usiz
 
 fn main() {
     let local: DateTime<Local> = Local::now();
-    let mut epoch = 1;
+    let mut epoch = 0;
     let timestamp = local.format("%Y%m%d-%H%M%S").to_string();
     let folder_name = format!("plots_{}", timestamp);
     fs::create_dir(&folder_name).unwrap();
