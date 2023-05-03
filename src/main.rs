@@ -57,7 +57,7 @@ fn draw_lines(
                             network.neurons[i - 1][j].weights[1],
                         ),
                     ],
-                    plotters::style::colors::BLACK.filled().stroke_width(2),
+                    plotters::style::colors::BLACK.filled().stroke_width(1),
                 )))?;
             }
             if j > 0 {
@@ -71,9 +71,43 @@ fn draw_lines(
                             network.neurons[i][j - 1].weights[1],
                         ),
                     ],
-                    color.filled().stroke_width(2),
+                    color.filled().stroke_width(1),
                 )))?;
             }
+        }
+    }
+    Ok(())
+}
+
+fn draw_neurons(
+    network: &SOMNetwork,
+    root: &mut DrawingArea<BitMapBackend, plotters::coord::Shift>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let x_min = -300.0;
+    let x_max = 300.0;
+    let y_min = -300.0;
+    let y_max = 300.0;
+
+    let mut chart = ChartBuilder::on(&root)
+        .x_label_area_size(40)
+        .y_label_area_size(40)
+        .margin(5)
+        .caption("SOM Network", ("sans-serif", 50.0))
+        .build_cartesian_2d(x_min..x_max, y_min..y_max)?;
+
+    chart.configure_mesh().axis_style(&BLACK).draw()?;
+
+    for (i, row) in network.neurons.iter().enumerate() {
+        for (j, neuron) in row.iter().enumerate() {
+            let color = plotters::style::colors::full_palette::BLUE;
+            chart.draw_series(std::iter::once(Circle::new(
+                (
+                    -300.0 + 30.0 + (i as f64 * 60.0),
+                    -300.0 + 30.0 + (j as f64 * 60.0),
+                ),
+                3,
+                color.filled(),
+            )))?;
         }
     }
     Ok(())
@@ -168,5 +202,6 @@ fn main() {
     let path1 = "./plot1.png";
     let mut plot1 = BitMapBackend::new(&path1, (600, 600)).into_drawing_area();
     draw_points(&points, &mut plot1);
+    draw_neurons(&som_network, &mut plot1);
     draw_lines(&som_network, &mut plot1);
 }
