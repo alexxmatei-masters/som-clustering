@@ -99,7 +99,7 @@ fn draw_neurons(
 
     for (i, row) in network.neurons.iter().enumerate() {
         for (j, neuron) in row.iter().enumerate() {
-            let color = plotters::style::colors::full_palette::BLUE;
+            let color = plotters::style::colors::full_palette::PINK_300;
             chart.draw_series(std::iter::once(Circle::new(
                 (
                     -300.0 + 30.0 + (i as f64 * 60.0),
